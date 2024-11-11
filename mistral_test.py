@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 def setup_model(model_name="mistralai/Mistral-7B-v0.1", device="cuda"):
     """Setup model and tokenizer with proper configuration."""
@@ -16,10 +16,17 @@ def setup_model(model_name="mistralai/Mistral-7B-v0.1", device="cuda"):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
+    # Configure 4-bit quantization
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_quant_type="nf4"
+    )
+
     # Load model with optimized settings
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype=torch.float16,  # Use half precision for memory efficiency
+        quantization_config=quantization_config,
         device_map="auto",  # Automatically handle model placement
         trust_remote_code=True
     )
