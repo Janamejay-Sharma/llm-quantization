@@ -44,11 +44,12 @@ class ModelEvaluator:
         """Calculate model size in MB"""
         return sum(p.numel() * p.element_size() for p in model.parameters()) / (1024 ** 2)
     
-    def evaluate_model(self, model, tokenizer, texts: List[str], batch_size: int = 8) -> Dict[str, float]:
+    def evaluate_model(self, model, tokenizer, texts: List[str], batch_size: int = 4) -> Dict[str, float]:
         model.eval()
         losses = []
         latencies = []
         gpu_memories = []
+        max_length = getattr(model.config, 'max_position_embeddings', 512)
         
         # Process in batches
         for i in range(0, len(texts), batch_size):
@@ -58,13 +59,14 @@ class ModelEvaluator:
             start_time = time.time()
             gpu_mem_start = self.measure_gpu_memory()
             
+
             try:
                 with torch.no_grad():
                     inputs = tokenizer(batch_texts, 
                                      return_tensors='pt', 
                                      padding=True, 
                                      truncation=True, 
-                                     max_length=512)
+                                     max_length=max_length)
                     input_ids = inputs['input_ids'].to(self.device)
                     attention_mask = inputs['attention_mask'].to(self.device)
                     
@@ -144,8 +146,7 @@ class ModelEvaluator:
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True
+            bnb_4bit_quant_type="nf4"
         )
         
         model_quantized = AutoModelForCausalLM.from_pretrained(
@@ -221,10 +222,9 @@ class ModelEvaluator:
         print(summary_df.to_string(index=False))
 
 
-
 def main():
     # Initialize evaluator
-    evaluator = ModelEvaluator("gpt2")
+    evaluator = ModelEvaluator("mistralai/Mistral-7B-v0.1")
     
     # Run evaluation
     metrics_unquantized, metrics_quantized = evaluator.run_evaluation(
