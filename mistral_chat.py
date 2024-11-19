@@ -61,7 +61,7 @@ def main():
     else:
         print("Welcome to the Chatbot! Type 'exit' to quit.")
         while True:
-            print("-"*150)
+            print("-"*20)
             prompt = input("user: ")
             if prompt.lower() in {"exit", "quit"}:
                 print("Exiting the chatbot. Goodbye!")
