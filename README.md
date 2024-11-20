@@ -10,9 +10,8 @@ This project demonstrates the use of quantization techniques to optimize large l
 Quantization is a technique used to reduce the size and computational requirements of deep learning models by representing weights and activations with lower precision. For instance, instead of using 32-bit floating-point numbers, a model can use 8-bit or even 4-bit representations. 
 
 #### Benefits of Quantization
-- **Smaller Model Size:** Reduces storage and memory requirements.
-- **Faster Inference:** Speeds up computations by using lower precision operations.
-- **Energy Efficiency:** Lowers power consumption, making deployment feasible on edge devices.
+- **Smaller Model Size:** Reduces storage and memory requirements making deployment feasible on edge devices.
+- **Faster Inference:** Speeds up computations by using lower precision operations, although there is a quantization-associated overhead.
 
 Quantization allowed us to deploy the **Mistral-7B** (a 15 GB, 7 billion parameter model) on consumer-grade GPUs with limited VRAM, such as the NVIDIA RTX 2060 (6 GB).
 
@@ -20,16 +19,6 @@ Quantization allowed us to deploy the **Mistral-7B** (a 15 GB, 7 billion paramet
 ## 🚀 **Features**
 - **Text Completion (`completion.py`):** A script for interactive text generation using GPT-2 or other Hugging Face-supported models.
 - **Interactive Chatbot (`chatbot.py`):** A conversational chatbot using the Mistral-7B-Instruct-v0.2 model, optimized with 4-bit quantization.
-
----
-## 🖥️ **Hardware Requirements**
-
-| Model          | Model Size | Quantization | VRAM Requirement |
-|-----------------|---------------------|--------------|-------------------|
-| GPT-2          | 470 MB             | 8-bit        | ~2 GB            |
-| Mistral-7B     | 15 GB              | 4-bit        | ~6 GB            |
-
-The programs were only tested on CUDA-compatible GPUs. CPU inference is likely to be prohibitively slow.
 
 ---
 ## 📦 **Installation**
@@ -84,6 +73,16 @@ The `chatbot.py` script runs a conversational chatbot using the **Mistral-7B-Ins
     ```
 
 Despite its 15 GB model size, the 4-bit quantized version ran successfully on an RTX 2060 (6 GB VRAM).
+
+---
+## 🖥️ **Hardware Requirements**
+
+| Model          | Model Size | Quantization | VRAM Requirement |
+|-----------------|---------------------|--------------|-------------------|
+| GPT-2          | 470 MB             | 8-bit        | ~2 GB            |
+| Mistral-7B     | 15 GB              | 4-bit        | ~6 GB            |
+
+The programs were only tested on CUDA-compatible GPUs. CPU inference is likely to be prohibitively slow.
 
 ---
 ### 📬 **Acknowledgments**
