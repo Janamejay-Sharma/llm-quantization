@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 # Suppress logging
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
-def generate_text(prompt, model, tokenizer, new_tokens_per_iter=50):
+def generate_text(prompt, model, tokenizer, new_tokens_per_iter=128):
     input_ids = tokenizer(prompt, return_tensors="pt").input_ids.cuda()
 
     # Generate attention mask
@@ -19,7 +19,7 @@ def generate_text(prompt, model, tokenizer, new_tokens_per_iter=50):
             max_length=input_ids.shape[1] + new_tokens_per_iter,
             attention_mask=attention_mask,
             do_sample=True,          
-            top_k=50,                
+            top_k=256,                
             top_p=0.95,              
             temperature=0.7,
             eos_token_id=model.config.eos_token_id
@@ -65,12 +65,16 @@ def main():
     model, tokenizer = load_model(model_name=args.model_name, quantization=args.quantization)
 
     print("Chatbot ready! Type your message or 'exit' to quit.")
-    while True:
-        prompt = input("You: ")
-        if prompt.lower() == "exit":
-            break
-        response = generate_text(prompt, model, tokenizer)
-        print(f"Bot: {response}")
+    try:
+        while True:
+            prompt = input("You: ")
+            if prompt.lower() == "exit":
+                break
+            response = generate_text(prompt, model, tokenizer)
+            print(f"Bot: {response}")
+    except KeyboardInterrupt:
+        print("\nReceived keyboard interrupt.")
+
 
 if __name__ == "__main__":
     main()

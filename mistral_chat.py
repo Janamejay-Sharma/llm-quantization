@@ -60,18 +60,22 @@ def main():
         context.append({"role": "assistant", "content": response})
     else:
         print("Welcome to the Chatbot! Type 'exit' to quit.")
-        while True:
-            print("-"*20)
-            prompt = input("user: ")
-            if prompt.lower() in {"exit", "quit"}:
-                print("Exiting the chatbot. Goodbye!")
-                break
-            # Append user message to context
-            context.append({"role": "user", "content": prompt})
-            response = chat(context)
-            print("bot:", response)
-            # Append bot response to context
-            context.append({"role": "assistant", "content": response})
+        try:
+            while True:
+                print("-"*20)
+                prompt = input("user: ")
+                if prompt.lower() in {"exit", "quit"}:
+                    print("Exiting the chatbot. Goodbye!")
+                    break
+                # Append user message to context
+                context.append({"role": "user", "content": prompt})
+                response = chat(context)
+                print("bot:", response)
+                # Append bot response to context
+                context.append({"role": "assistant", "content": response})
+        except KeyboardInterrupt:
+            print("\nReceived keyboard interrupt.")
+
 
 if __name__ == "__main__":
     main()
