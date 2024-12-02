@@ -1,7 +1,9 @@
+import time
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, LlamaTokenizerFast, BitsAndBytesConfig
 
-model_name = "mistralai/Mistral-7B-Instruct-v0.2"
+# model_name = "mistralai/Mistral-7B-Instruct-v0.3"
+model_name = "cognitivecomputations/dolphin-2.9.3-mistral-7B-32k"
 
 quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -15,7 +17,7 @@ model = AutoModelForCausalLM.from_pretrained(
     quantization_config=quantization_config,
     device_map="auto"
 )
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = LlamaTokenizerFast.from_pretrained(model_name)
 
 # Print model information
 print(f"Model: {model_name}")
@@ -57,12 +59,50 @@ for prompt in prompts:
     )
     
     # Generate response
+
+    start = time.time()
+    # # Greedy Search
+    # response_token_ids = model.generate(
+    #     tokenized_message['input_ids'].cuda(),
+    #     attention_mask=tokenized_message['attention_mask'].cuda(),
+    #     max_new_tokens=256,  # Limit response length
+    #     pad_token_id=tokenizer.eos_token_id,
+    # )
+
+    # Contrastive Search https://huggingface.co/blog/introducing-csearch (actually pretty good)
     response_token_ids = model.generate(
         tokenized_message['input_ids'].cuda(),
         attention_mask=tokenized_message['attention_mask'].cuda(),
-        max_new_tokens=256,  # Set a reasonable limit for token generation
-        pad_token_id=tokenizer.eos_token_id
+        max_new_tokens=256,  # Limit response length
+        penalty_alpha=0.6,
+        top_k=512,
+        pad_token_id=tokenizer.eos_token_id,
     )
+
+    # # Beam-Search Multinomial Sampling
+    # response_token_ids = model.generate(
+    #     tokenized_message['input_ids'].cuda(),
+    #     attention_mask=tokenized_message['attention_mask'].cuda(),
+    #     max_new_tokens=256,  # Limit response length
+    #     do_sample=True,
+    #     num_beams=5,
+    #     pad_token_id=tokenizer.eos_token_id,
+    # )
+
+    # # Diverse Beam-Search Decoding (slow as shit)
+    # response_token_ids = model.generate(
+    #     tokenized_message['input_ids'].cuda(),
+    #     attention_mask=tokenized_message['attention_mask'].cuda(),
+    #     max_new_tokens=256,  # Limit response length
+    #     num_beams=5,
+    #     num_beam_groups=5,
+    #     diversity_penalty=0.5,
+    #     do_sample=False,
+    #     pad_token_id=tokenizer.eos_token_id,
+    # )
+    generate_time = time.time() - start
+    
+    print(f"Generated in: {generate_time:.2f} seconds")
     
     # Decode generated text
     generated_tokens = response_token_ids[:, len(tokenized_message['input_ids'][0]):]
