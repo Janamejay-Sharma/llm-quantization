@@ -1,0 +1,15 @@
+model:
+  type: "base"
+  base_params:
+    model_args: "pretrained=mistralai/Mistral-7B-Instruct-v0.3,revision=main" # Use your model name and other arguments as needed
+    dtype: "4bit"  # Specifying the model to be loaded in 4-bit quantization
+    compile: false  # Compiling for optimized performance
+    # compute_dtype: "float16"  # Matches the `bnb_4bit_compute_dtype` in the program
+    # quant_type: "nf4"  # Matches `bnb_4bit_quant_type` in the program
+    # device_map: "auto"  # Automatically maps the model to available devices
+  merged_weights:  # This section is ignored since no delta or adapter weights are being used
+    delta_weights: false
+    adapter_weights: false
+    base_model: null
+  generation:
+    multichoice_continuations_start_space: null  # No special behavior for multiple choice continuations
